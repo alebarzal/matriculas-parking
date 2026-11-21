@@ -1,1 +1,2 @@
-- Versión de prueba del aviso de actualización
+- Al acabar la ronda, el botón Terminar borra la lista y vuelve a la pantalla de inicio para importar la siguiente (con opción de Deshacer)
+- Cuando encuentras todos los coches aparece también el botón Terminar ronda

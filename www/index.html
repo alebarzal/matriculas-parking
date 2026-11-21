@@ -182,7 +182,7 @@ details.way .body { padding: 0 14px 12px; }
 <div class="foot wrap" id="foot" hidden>
   <button class="btn ghost" id="btnImport2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Importar</button>
   <button class="btn" id="btnShare">Resumen</button>
-  <button class="btn danger" id="btnReset">Reiniciar</button>
+  <button class="btn danger" id="btnReset">Terminar</button>
 </div>
 
 <input type="file" id="file" hidden>
@@ -234,7 +234,7 @@ details.way .body { padding: 0 14px 12px; }
     </ul>
 
     <h3><span class="n">5</span>Al terminar</h3>
-    <p>Pulsa <b>Resumen</b>: copia un texto con las que faltan y las no registradas, listo para pegar en WhatsApp o en el correo al encargado. <b>Reiniciar</b> borra las marcas (pide confirmación).</p>
+    <p>Pulsa <b>Resumen</b>: copia un texto con las que faltan y las no registradas, listo para pegar en WhatsApp o en el correo al encargado. Después pulsa <b>Terminar</b> (toca dos veces para confirmar): se borran la lista y las marcas y vuelves a la pantalla de inicio para importar la lista de la próxima ronda. Si lo pulsas sin querer, toca <b>Deshacer</b>.</p>
 
     <h3>Preguntas rápidas</h3>
     <ul>
@@ -271,11 +271,15 @@ details.way .body { padding: 0 14px 12px; }
 <script>
 (() => {
 'use strict';
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 const REPO = 'alebarzal/matriculas-parking';
 const KEY = 'matriculas-v2';
 const KEY_VER = 'matriculas-ver';
 const CHANGELOG = [
+  { v: '2.0.2', d: '21 nov 2026', items: [
+    'Al acabar la ronda, el botón Terminar borra la lista y vuelve a la pantalla de inicio para importar la siguiente. Si lo pulsas sin querer, toca Deshacer.',
+    'Cuando encuentras todos los coches aparece también el botón Terminar ronda.'
+  ]},
   { v: '2.0.1', d: '21 nov 2026', items: [
     'Versión de prueba del aviso de actualización.'
   ]},
@@ -551,7 +555,7 @@ function render() {
   list.sort((a, b) => (b.e || 0) - (a.e || 0));
   const extras = state.extras.filter(x => !term || x.p.includes(term));
   let h = '';
-  if (done === total && !term && filter === 'pend') h += `<div class="banner" style="background:var(--ok-soft)"><p><b>¡Ronda completa!</b> Has encontrado los ${total} coches de la lista.</p><button class="btn" data-act="share">Ver resumen</button></div>`;
+  if (done === total && !term && filter === 'pend') h += `<div class="banner" style="background:var(--ok-soft)"><p><b>¡Ronda completa!</b> Has encontrado los ${total} coches de la lista.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="share">Ver resumen</button><button class="btn ghost" data-act="finish">Terminar ronda</button></div></div>`;
   h += `<div class="sec-h"><h2>${term ? 'Resultados' : filter === 'pend' ? 'Faltan por ver' : 'Todas'} · ${list.length}</h2>${filter === 'pend' && !term && done ? `<span class="chip ok">${done} vistas</span>` : ''}</div>`;
   if (list.length) h += '<ul class="grid">' + list.map(carHTML).join('') + '</ul>';
   else if (term) {
@@ -605,6 +609,7 @@ $('main').addEventListener('click', e => {
     else if (a === 'help') openPanel('pHelp');
     else if (a === 'addx') addExtra(norm($('q').value));
     else if (a === 'share') openShare();
+    else if (a === 'finish') finishRound();
     return;
   }
   const li = e.target.closest('.car[data-p]');
@@ -626,12 +631,20 @@ $('btnHelp').onclick = () => openPanel('pHelp');
 $('file').addEventListener('change', e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ''; });
 if (!IS_APP) $('file').setAttribute('accept', '.xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
+// Terminar la ronda: borra lista y marcas y vuelve a la pantalla de inicio (con Deshacer)
+function finishRound() {
+  const backup = JSON.parse(JSON.stringify(state));
+  state = { meta: null, cars: [], seen: {}, extras: [] };
+  filter = 'pend'; $('q').value = '';
+  save(); render(); window.scrollTo(0, 0);
+  toast('Ronda terminada. Importa la lista de la próxima.', () => { state = backup; save(); render(); }, 6000);
+}
 let armed = null;
 $('btnReset').onclick = () => {
   const b = $('btnReset');
-  if (!armed) { b.textContent = '¿Seguro? Toca otra vez'; b.classList.add('armed'); armed = setTimeout(() => { b.textContent = 'Reiniciar'; b.classList.remove('armed'); armed = null; }, 3500); return; }
-  clearTimeout(armed); armed = null; b.textContent = 'Reiniciar'; b.classList.remove('armed');
-  state.seen = {}; state.extras = []; save(); render(); toast('Marcas borradas');
+  if (!armed) { b.textContent = '¿Seguro? Toca otra vez'; b.classList.add('armed'); armed = setTimeout(() => { b.textContent = 'Terminar'; b.classList.remove('armed'); armed = null; }, 3500); return; }
+  clearTimeout(armed); armed = null; b.textContent = 'Terminar'; b.classList.remove('armed');
+  finishRound();
 };
 
 function summary() {
