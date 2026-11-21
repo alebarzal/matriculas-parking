@@ -1,7 +1,1 @@
-- Importa el archivo que exporta el portal (.xlsx o .csv) y detecta las matrículas solas
-- Abrir el archivo directamente desde Gmail, WhatsApp o Drive con «Abrir con → Matrículas»
-- Hora de entrada, tiempo dentro y etiquetas (Abono, Telpark, Prebook…) en cada coche
-- Aviso de estancias largas sin abono
-- Coches vistos que no están en el sistema, aparte y en rojo
-- Resumen para copiar o enviar por WhatsApp
-- Guía para el personal y aviso de versiones nuevas
+- Versión de prueba del aviso de actualización

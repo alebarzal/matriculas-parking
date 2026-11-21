@@ -1,6 +1,6 @@
 {
   "name": "matriculas-parking",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "Checklist de matrículas del parking: importa el export del portal y marca los coches en la ronda",
   "scripts": {
